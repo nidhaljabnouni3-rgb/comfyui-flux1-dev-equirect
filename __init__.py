@@ -35,7 +35,7 @@ _MODELS = [
     },
     {
         "label": "FLUX.1 VAE (ae)",
-        "repo_id": "black-forest-labs/FLUX.1-schnell",
+        "repo_id": "ffxvs/vae-flux",
         "hf_path": "ae.safetensors",
         "subdir": "vae",
         "filename": "ae.safetensors",
