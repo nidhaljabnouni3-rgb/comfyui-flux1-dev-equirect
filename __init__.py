@@ -7,6 +7,7 @@ _TAG = "flux1-dev-equirect"
 # resolves diffusion_models → models/unet/ (local, not symlinked).
 _VAE_LOCAL_DIR = "/tmp/flux1dev_equirect_vae"
 _LORA_LOCAL_DIR = "/tmp/flux1dev_equirect_loras"
+_UPSCALE_LOCAL_DIR = "/tmp/flux1dev_equirect_upscale"
 
 _MODELS = [
     {
@@ -40,6 +41,14 @@ _MODELS = [
         "subdir": "vae",
         "filename": "ae.safetensors",
         "local_dir": _VAE_LOCAL_DIR,  # bypass GCS symlink
+    },
+    {
+        "label": "4x-UltraSharp upscaler",
+        "repo_id": "Kim2091/UltraSharp",
+        "hf_path": "4x-UltraSharp.pth",
+        "subdir": "upscale_models",
+        "filename": "4x-UltraSharp.pth",
+        "local_dir": _UPSCALE_LOCAL_DIR,  # bypass GCS symlink
     },
     {
         "label": "Equirectangular 360 LoRA v3",
@@ -114,6 +123,7 @@ def _register_extra_paths():
         import folder_paths
         folder_paths.add_model_folder_path("vae", _VAE_LOCAL_DIR)
         folder_paths.add_model_folder_path("loras", _LORA_LOCAL_DIR)
+        folder_paths.add_model_folder_path("upscale_models", _UPSCALE_LOCAL_DIR)
     except Exception as e:
         _log(f"WARNING: could not register extra paths with folder_paths: {e}")
 
