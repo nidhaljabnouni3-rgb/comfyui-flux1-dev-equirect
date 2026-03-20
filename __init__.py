@@ -19,6 +19,14 @@ _MODELS = [
         "local_dir": None,  # resolved via folder_paths → models/unet/ (local)
     },
     {
+        "label": "FLUX.1-Fill-dev diffusion model (fp8)",
+        "repo_id": "Kijai/flux-fp8",
+        "hf_path": "flux1-fill-dev-fp8.safetensors",
+        "subdir": "diffusion_models",
+        "filename": "flux1-fill-dev-fp8.safetensors",
+        "local_dir": None,
+    },
+    {
         "label": "CLIP-L text encoder",
         "repo_id": "comfyanonymous/flux_text_encoders",
         "hf_path": "clip_l.safetensors",
