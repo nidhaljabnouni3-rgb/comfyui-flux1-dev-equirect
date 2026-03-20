@@ -1,70 +1,36 @@
 import os
 
-_TAG = "flux1-dev-equirect"
+_TAG = "flux2-klein-models"
 
-# Dirs symlinked to GCS FUSE in Cloud Run (writes are slow/unreliable).
-# Small models (VAE, LoRA) go to /tmp; large models use folder_paths which
-# resolves diffusion_models → models/unet/ (local, not symlinked).
-_VAE_LOCAL_DIR = "/tmp/flux1dev_equirect_vae"
-_LORA_LOCAL_DIR = "/tmp/flux1dev_equirect_loras"
-_UPSCALE_LOCAL_DIR = "/tmp/flux1dev_equirect_upscale"
+# VAE is saved outside the standard models/vae/ dir because that directory
+# is symlinked to GCS FUSE in Cloud Run — writing there is slow/unreliable.
+# We save to a local /tmp path and register it with folder_paths instead.
+_VAE_LOCAL_DIR = "/tmp/flux2_klein_vae"
 
 _MODELS = [
     {
-        "label": "FLUX.1-dev diffusion model (fp8)",
-        "repo_id": "Kijai/flux-fp8",
-        "hf_path": "flux1-dev-fp8.safetensors",
+        "label": "FLUX.2 [klein] 4B distilled diffusion model",
+        "repo_id": "Comfy-Org/flux2-klein",
+        "hf_path": "split_files/diffusion_models/flux-2-klein-4b.safetensors",
         "subdir": "diffusion_models",
-        "filename": "flux1-dev-fp8.safetensors",
-        "local_dir": None,  # resolved via folder_paths → models/unet/ (local)
+        "filename": "flux-2-klein-4b.safetensors",
+        "local_dir": None,  # resolved at runtime via folder_paths
     },
     {
-        "label": "FLUX.1-Fill-dev diffusion model (fp8)",
-        "repo_id": "Kijai/flux-fp8",
-        "hf_path": "flux1-fill-dev-fp8.safetensors",
-        "subdir": "diffusion_models",
-        "filename": "flux1-fill-dev-fp8.safetensors",
-        "local_dir": None,
-    },
-    {
-        "label": "CLIP-L text encoder",
-        "repo_id": "comfyanonymous/flux_text_encoders",
-        "hf_path": "clip_l.safetensors",
+        "label": "Qwen3 4B text encoder",
+        "repo_id": "Comfy-Org/flux2-klein",
+        "hf_path": "split_files/text_encoders/qwen_3_4b.safetensors",
         "subdir": "text_encoders",
-        "filename": "clip_l.safetensors",
+        "filename": "qwen_3_4b.safetensors",
         "local_dir": None,
     },
     {
-        "label": "T5-XXL text encoder (fp8)",
-        "repo_id": "comfyanonymous/flux_text_encoders",
-        "hf_path": "t5xxl_fp8_e4m3fn.safetensors",
-        "subdir": "text_encoders",
-        "filename": "t5xxl_fp8_e4m3fn.safetensors",
-        "local_dir": None,
-    },
-    {
-        "label": "FLUX.1 VAE (ae)",
-        "repo_id": "ffxvs/vae-flux",
-        "hf_path": "ae.safetensors",
+        "label": "FLUX.2 VAE",
+        "repo_id": "Comfy-Org/flux2-dev",
+        "hf_path": "split_files/vae/flux2-vae.safetensors",
         "subdir": "vae",
-        "filename": "ae.safetensors",
+        "filename": "flux2-vae.safetensors",
         "local_dir": _VAE_LOCAL_DIR,  # bypass GCS symlink
-    },
-    {
-        "label": "4x-UltraSharp upscaler",
-        "repo_id": "Kim2091/UltraSharp",
-        "hf_path": "4x-UltraSharp.pth",
-        "subdir": "upscale_models",
-        "filename": "4x-UltraSharp.pth",
-        "local_dir": _UPSCALE_LOCAL_DIR,  # bypass GCS symlink
-    },
-    {
-        "label": "Equirectangular 360 LoRA v3",
-        "repo_id": "MultiTrickFox/Flux-LoRA-Equirectangular-v3",
-        "hf_path": "equirectangular_flux_lora_v3_000003072.safetensors",
-        "subdir": "loras",
-        "filename": "equirectangular_flux_lora_v3_000003072.safetensors",
-        "local_dir": _LORA_LOCAL_DIR,  # bypass GCS symlink
     },
 ]
 
@@ -125,19 +91,17 @@ def _download_models():
     _log("All models ready.")
 
 
-def _register_extra_paths():
-    """Register /tmp model dirs so ComfyUI loaders can find them."""
+def _register_vae_path():
+    """Tell ComfyUI's VAELoader to also scan our local VAE dir."""
     try:
         import folder_paths
         folder_paths.add_model_folder_path("vae", _VAE_LOCAL_DIR)
-        folder_paths.add_model_folder_path("loras", _LORA_LOCAL_DIR)
-        folder_paths.add_model_folder_path("upscale_models", _UPSCALE_LOCAL_DIR)
     except Exception as e:
-        _log(f"WARNING: could not register extra paths with folder_paths: {e}")
+        _log(f"WARNING: could not register VAE path with folder_paths: {e}")
 
 
 _download_models()
-_register_extra_paths()
+_register_vae_path()
 
 NODE_CLASS_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS = {}
