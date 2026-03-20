@@ -3,11 +3,17 @@ import os
 _TAG = "flux1-dev-equirect"
 
 # Dirs symlinked to GCS FUSE in Cloud Run (writes are slow/unreliable).
-# Small models (VAE, LoRA) go to /tmp; large models use folder_paths which
-# resolves diffusion_models → models/unet/ (local, not symlinked).
+# Small models (VAE, LoRA) go to /tmp.
+# Large diffusion models go to models/diffusion_models/ which is symlinked
+# to GCS FUSE by the entrypoint — persists across cold starts, no RAM usage.
 _VAE_LOCAL_DIR = "/tmp/flux1dev_equirect_vae"
 _LORA_LOCAL_DIR = "/tmp/flux1dev_equirect_loras"
 _UPSCALE_LOCAL_DIR = "/tmp/flux1dev_equirect_upscale"
+
+# Entrypoint symlinks models/diffusion_models/ → /gcs/comfyui/models/diffusion_models/
+# This avoids filling the writable layer (RAM-backed) with 24+ GB of models.
+_COMFYUI_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+_DIFFUSION_FUSE_DIR = os.path.join(_COMFYUI_DIR, "models", "diffusion_models")
 
 _MODELS = [
     {
@@ -16,7 +22,7 @@ _MODELS = [
         "hf_path": "flux1-dev-fp8.safetensors",
         "subdir": "diffusion_models",
         "filename": "flux1-dev-fp8.safetensors",
-        "local_dir": None,  # resolved via folder_paths → models/unet/ (local)
+        "local_dir": _DIFFUSION_FUSE_DIR,  # GCS FUSE via entrypoint symlink
     },
     {
         "label": "FLUX.1-Fill-dev diffusion model (fp8)",
@@ -24,7 +30,7 @@ _MODELS = [
         "hf_path": "FLUX.1-Fill-dev_fp8.safetensors",
         "subdir": "diffusion_models",
         "filename": "FLUX.1-Fill-dev_fp8.safetensors",
-        "local_dir": None,
+        "local_dir": _DIFFUSION_FUSE_DIR,  # GCS FUSE via entrypoint symlink
     },
     {
         "label": "CLIP-L text encoder",
