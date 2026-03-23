@@ -21,9 +21,9 @@ _MODELS = [
         "label": "FLUX.1-dev diffusion model (fp8)",
         "repo_id": "Kijai/flux-fp8",
         "hf_path": "flux1-dev-fp8.safetensors",
-        "subdir": "diffusion_models",
+        "subdir": "unet",
         "filename": "flux1-dev-fp8.safetensors",
-        "local_dir": None,  # local tmpfs (models/unet/) — efficient mmap, no RAM doubling
+        "local_dir": os.path.join(_COMFYUI_DIR, "models", "unet"),  # local tmpfs — efficient mmap
     },
     {
         "label": "FLUX.1-Fill-dev diffusion model (fp8)",
