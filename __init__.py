@@ -11,11 +11,10 @@ _LORA_LOCAL_DIR = "/tmp/flux1dev_equirect_loras"
 _UPSCALE_LOCAL_DIR = "/tmp/flux1dev_equirect_upscale"
 _TEXT_ENC_LOCAL_DIR = "/tmp/flux1dev_equirect_text_encoders"
 
-# Entrypoint symlinks models/ subdirs → /gcs/comfyui/models/ (GCS FUSE).
-# This avoids filling the writable layer (RAM-backed) with large models.
+# GCS FUSE mount path — diffusion models are pre-uploaded here (no startup download).
+# Use the FUSE path directly since the Docker image may not have the entrypoint symlinks.
 _COMFYUI_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
-_DIFFUSION_FUSE_DIR = os.path.join(_COMFYUI_DIR, "models", "diffusion_models")
-_TEXT_ENC_FUSE_DIR = os.path.join(_COMFYUI_DIR, "models", "text_encoders")
+_DIFFUSION_FUSE_DIR = "/gcs/comfyui/models/diffusion_models"
 
 _MODELS = [
     # FLUX.1-dev and FLUX.1-Fill-dev diffusion models are pre-uploaded to GCS.
