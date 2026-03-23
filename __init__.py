@@ -18,22 +18,9 @@ _DIFFUSION_FUSE_DIR = os.path.join(_COMFYUI_DIR, "models", "diffusion_models")
 _TEXT_ENC_FUSE_DIR = os.path.join(_COMFYUI_DIR, "models", "text_encoders")
 
 _MODELS = [
-    {
-        "label": "FLUX.1-dev diffusion model (fp8)",
-        "repo_id": "Kijai/flux-fp8",
-        "hf_path": "flux1-dev-fp8.safetensors",
-        "subdir": "unet",
-        "filename": "flux1-dev-fp8.safetensors",
-        "local_dir": os.path.join(_COMFYUI_DIR, "models", "unet"),  # local tmpfs — efficient mmap
-    },
-    {
-        "label": "FLUX.1-Fill-dev diffusion model (fp8)",
-        "repo_id": "1038lab/FLUX.1-Fill-dev_fp8",
-        "hf_path": "FLUX.1-Fill-dev_fp8.safetensors",
-        "subdir": "diffusion_models",
-        "filename": "FLUX.1-Fill-dev_fp8.safetensors",
-        "local_dir": _DIFFUSION_FUSE_DIR,  # GCS FUSE via entrypoint symlink
-    },
+    # FLUX.1-dev and FLUX.1-Fill-dev diffusion models are pre-uploaded to GCS.
+    # They are accessed via FUSE symlink at models/diffusion_models/ (no startup download).
+    # This avoids filling RAM with 24 GB of downloads at startup.
     {
         "label": "CLIP-L text encoder",
         "repo_id": "comfyanonymous/flux_text_encoders",
