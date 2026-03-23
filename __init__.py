@@ -39,7 +39,7 @@ _MODELS = [
         "hf_path": "clip_l.safetensors",
         "subdir": "text_encoders",
         "filename": "clip_l.safetensors",
-        "local_dir": _TEXT_ENC_FUSE_DIR,  # GCS FUSE via entrypoint symlink
+        "local_dir": None,  # local — efficient mmap from tmpfs
     },
     {
         "label": "T5-XXL text encoder (fp8)",
@@ -47,7 +47,7 @@ _MODELS = [
         "hf_path": "t5xxl_fp8_e4m3fn.safetensors",
         "subdir": "text_encoders",
         "filename": "t5xxl_fp8_e4m3fn.safetensors",
-        "local_dir": _TEXT_ENC_FUSE_DIR,  # GCS FUSE via entrypoint symlink
+        "local_dir": None,  # local — efficient mmap from tmpfs
     },
     {
         "label": "FLUX.1 VAE (ae)",
