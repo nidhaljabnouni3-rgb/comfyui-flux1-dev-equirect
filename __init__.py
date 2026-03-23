@@ -23,7 +23,7 @@ _MODELS = [
         "hf_path": "flux1-dev-fp8.safetensors",
         "subdir": "diffusion_models",
         "filename": "flux1-dev-fp8.safetensors",
-        "local_dir": _DIFFUSION_FUSE_DIR,  # GCS FUSE via entrypoint symlink
+        "local_dir": None,  # local tmpfs (models/unet/) — efficient mmap, no RAM doubling
     },
     {
         "label": "FLUX.1-Fill-dev diffusion model (fp8)",
