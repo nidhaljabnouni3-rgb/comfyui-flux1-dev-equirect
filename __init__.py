@@ -129,6 +129,8 @@ def _register_extra_paths():
         folder_paths.add_model_folder_path("upscale_models", _UPSCALE_LOCAL_DIR)
         folder_paths.add_model_folder_path("text_encoders", _TEXT_ENC_LOCAL_DIR)
         folder_paths.add_model_folder_path("clip", _TEXT_ENC_LOCAL_DIR)
+        folder_paths.add_model_folder_path("diffusion_models", _DIFFUSION_FUSE_DIR)
+        folder_paths.add_model_folder_path("unet", _DIFFUSION_FUSE_DIR)
     except Exception as e:
         _log(f"WARNING: could not register extra paths with folder_paths: {e}")
 
