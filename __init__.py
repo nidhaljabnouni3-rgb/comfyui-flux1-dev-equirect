@@ -10,10 +10,11 @@ _VAE_LOCAL_DIR = "/tmp/flux1dev_equirect_vae"
 _LORA_LOCAL_DIR = "/tmp/flux1dev_equirect_loras"
 _UPSCALE_LOCAL_DIR = "/tmp/flux1dev_equirect_upscale"
 
-# Entrypoint symlinks models/diffusion_models/ → /gcs/comfyui/models/diffusion_models/
-# This avoids filling the writable layer (RAM-backed) with 24+ GB of models.
+# Entrypoint symlinks models/ subdirs → /gcs/comfyui/models/ (GCS FUSE).
+# This avoids filling the writable layer (RAM-backed) with large models.
 _COMFYUI_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
 _DIFFUSION_FUSE_DIR = os.path.join(_COMFYUI_DIR, "models", "diffusion_models")
+_TEXT_ENC_FUSE_DIR = os.path.join(_COMFYUI_DIR, "models", "text_encoders")
 
 _MODELS = [
     {
@@ -38,7 +39,7 @@ _MODELS = [
         "hf_path": "clip_l.safetensors",
         "subdir": "text_encoders",
         "filename": "clip_l.safetensors",
-        "local_dir": None,
+        "local_dir": _TEXT_ENC_FUSE_DIR,  # GCS FUSE via entrypoint symlink
     },
     {
         "label": "T5-XXL text encoder (fp8)",
@@ -46,7 +47,7 @@ _MODELS = [
         "hf_path": "t5xxl_fp8_e4m3fn.safetensors",
         "subdir": "text_encoders",
         "filename": "t5xxl_fp8_e4m3fn.safetensors",
-        "local_dir": None,
+        "local_dir": _TEXT_ENC_FUSE_DIR,  # GCS FUSE via entrypoint symlink
     },
     {
         "label": "FLUX.1 VAE (ae)",
