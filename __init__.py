@@ -9,6 +9,7 @@ _TAG = "flux1-dev-equirect"
 _VAE_LOCAL_DIR = "/tmp/flux1dev_equirect_vae"
 _LORA_LOCAL_DIR = "/tmp/flux1dev_equirect_loras"
 _UPSCALE_LOCAL_DIR = "/tmp/flux1dev_equirect_upscale"
+_TEXT_ENC_LOCAL_DIR = "/tmp/flux1dev_equirect_text_encoders"
 
 # Entrypoint symlinks models/ subdirs → /gcs/comfyui/models/ (GCS FUSE).
 # This avoids filling the writable layer (RAM-backed) with large models.
@@ -39,7 +40,7 @@ _MODELS = [
         "hf_path": "clip_l.safetensors",
         "subdir": "text_encoders",
         "filename": "clip_l.safetensors",
-        "local_dir": None,  # local — efficient mmap from tmpfs
+        "local_dir": _TEXT_ENC_LOCAL_DIR,
     },
     {
         "label": "T5-XXL text encoder (fp8)",
@@ -47,7 +48,7 @@ _MODELS = [
         "hf_path": "t5xxl_fp8_e4m3fn.safetensors",
         "subdir": "text_encoders",
         "filename": "t5xxl_fp8_e4m3fn.safetensors",
-        "local_dir": None,  # local — efficient mmap from tmpfs
+        "local_dir": _TEXT_ENC_LOCAL_DIR,
     },
     {
         "label": "FLUX.1 VAE (ae)",
@@ -139,6 +140,8 @@ def _register_extra_paths():
         folder_paths.add_model_folder_path("vae", _VAE_LOCAL_DIR)
         folder_paths.add_model_folder_path("loras", _LORA_LOCAL_DIR)
         folder_paths.add_model_folder_path("upscale_models", _UPSCALE_LOCAL_DIR)
+        folder_paths.add_model_folder_path("text_encoders", _TEXT_ENC_LOCAL_DIR)
+        folder_paths.add_model_folder_path("clip", _TEXT_ENC_LOCAL_DIR)
     except Exception as e:
         _log(f"WARNING: could not register extra paths with folder_paths: {e}")
 
