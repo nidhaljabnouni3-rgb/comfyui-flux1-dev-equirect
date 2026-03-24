@@ -2,24 +2,21 @@ import os
 
 _TAG = "flux1-dev-equirect"
 
-# Dirs symlinked to GCS FUSE in Cloud Run (writes are slow/unreliable).
-# Small models (VAE, LoRA) go to /tmp.
-# Large diffusion models go to models/diffusion_models/ which is symlinked
-# to GCS FUSE by the entrypoint — persists across cold starts, no RAM usage.
+_DIFFUSION_LOCAL_DIR = "/tmp/flux1dev_equirect_diffusion"
 _VAE_LOCAL_DIR = "/tmp/flux1dev_equirect_vae"
 _LORA_LOCAL_DIR = "/tmp/flux1dev_equirect_loras"
 _UPSCALE_LOCAL_DIR = "/tmp/flux1dev_equirect_upscale"
 _TEXT_ENC_LOCAL_DIR = "/tmp/flux1dev_equirect_text_encoders"
 
-# GCS FUSE mount path — diffusion models are pre-uploaded here (no startup download).
-# Use the FUSE path directly since the Docker image may not have the entrypoint symlinks.
-_COMFYUI_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
-_DIFFUSION_FUSE_DIR = "/gcs/comfyui/models/diffusion_models"
-
 _MODELS = [
-    # FLUX.1-dev and FLUX.1-Fill-dev diffusion models are pre-uploaded to GCS.
-    # They are accessed via FUSE symlink at models/diffusion_models/ (no startup download).
-    # This avoids filling RAM with 24 GB of downloads at startup.
+    {
+        "label": "FLUX.1-dev diffusion model (fp8)",
+        "repo_id": "Kijai/flux-fp8",
+        "hf_path": "flux1-dev-fp8.safetensors",
+        "subdir": "diffusion_models",
+        "filename": "flux1-dev-fp8.safetensors",
+        "local_dir": _DIFFUSION_LOCAL_DIR,
+    },
     {
         "label": "CLIP-L text encoder",
         "repo_id": "comfyanonymous/flux_text_encoders",
@@ -42,7 +39,7 @@ _MODELS = [
         "hf_path": "ae.safetensors",
         "subdir": "vae",
         "filename": "ae.safetensors",
-        "local_dir": _VAE_LOCAL_DIR,  # bypass GCS symlink
+        "local_dir": _VAE_LOCAL_DIR,
     },
     {
         "label": "4x-UltraSharp upscaler",
@@ -50,7 +47,7 @@ _MODELS = [
         "hf_path": "4x-UltraSharp.pth",
         "subdir": "upscale_models",
         "filename": "4x-UltraSharp.pth",
-        "local_dir": _UPSCALE_LOCAL_DIR,  # bypass GCS symlink
+        "local_dir": _UPSCALE_LOCAL_DIR,
     },
     {
         "label": "Equirectangular 360 LoRA v3",
@@ -58,27 +55,13 @@ _MODELS = [
         "hf_path": "equirectangular_flux_lora_v3_000003072.safetensors",
         "subdir": "loras",
         "filename": "equirectangular_flux_lora_v3_000003072.safetensors",
-        "local_dir": _LORA_LOCAL_DIR,  # bypass GCS symlink
+        "local_dir": _LORA_LOCAL_DIR,
     },
 ]
 
 
 def _log(msg):
     print(f"[{_TAG}] {msg}", flush=True)
-
-
-def _resolve_local_dir(model):
-    if model["local_dir"] is not None:
-        return model["local_dir"]
-    try:
-        import folder_paths
-        paths = folder_paths.get_folder_paths(model["subdir"])
-        if paths:
-            return paths[0]
-    except Exception:
-        pass
-    root = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    return os.path.join(root, "models", model["subdir"])
 
 
 def _download_models():
@@ -92,7 +75,7 @@ def _download_models():
     headers = {"Authorization": f"Bearer {token}"} if token else {}
 
     for model in _MODELS:
-        local_dir = _resolve_local_dir(model)
+        local_dir = model["local_dir"]
         local_path = os.path.join(local_dir, model["filename"])
 
         if os.path.exists(local_path):
@@ -120,18 +103,17 @@ def _download_models():
 
 
 def _register_extra_paths():
-    """Register /tmp model dirs so ComfyUI loaders can find them."""
     try:
         import folder_paths
+        folder_paths.add_model_folder_path("diffusion_models", _DIFFUSION_LOCAL_DIR)
+        folder_paths.add_model_folder_path("unet", _DIFFUSION_LOCAL_DIR)
         folder_paths.add_model_folder_path("vae", _VAE_LOCAL_DIR)
         folder_paths.add_model_folder_path("loras", _LORA_LOCAL_DIR)
         folder_paths.add_model_folder_path("upscale_models", _UPSCALE_LOCAL_DIR)
         folder_paths.add_model_folder_path("text_encoders", _TEXT_ENC_LOCAL_DIR)
         folder_paths.add_model_folder_path("clip", _TEXT_ENC_LOCAL_DIR)
-        folder_paths.add_model_folder_path("diffusion_models", _DIFFUSION_FUSE_DIR)
-        folder_paths.add_model_folder_path("unet", _DIFFUSION_FUSE_DIR)
     except Exception as e:
-        _log(f"WARNING: could not register extra paths with folder_paths: {e}")
+        _log(f"WARNING: could not register extra paths: {e}")
 
 
 _download_models()
